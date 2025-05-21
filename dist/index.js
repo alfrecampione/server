@@ -1,0 +1,55 @@
+import Fastify from 'fastify';
+import App from './app.js';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+import cors from '@fastify/cors';
+import fastifyJwt from '@fastify/jwt';
+import path from 'path';
+import fastifyStatic from '@fastify/static';
+import dotenv from 'dotenv';
+dotenv.config();
+if (!process.env.JWT_SECRET) {
+    throw new Error('Missing JWT_SECRET in environment variables');
+}
+async function start() {
+    const fastify = Fastify({
+        logger: true,
+    });
+    fastify.register(cors, {
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    });
+    fastify.register(fastifyJwt, {
+        secret: process.env.JWT_SECRET,
+    });
+    await fastify.register(swagger, {
+        swagger: {
+            info: {
+                title: 'Fastify API',
+                description: 'API documentation for Fastify application',
+                version: '1.0.0',
+            },
+            consumes: ['application/json'],
+            produces: ['application/json'],
+        },
+    });
+    await fastify.register(swaggerUi, {
+        routePrefix: '/docs',
+        staticCSP: true,
+        transformStaticCSP: (header) => header,
+    });
+    fastify.register(fastifyStatic, {
+        root: path.join(__dirname, 'pages'),
+        prefix: '/',
+    });
+    await fastify.register(App);
+    await fastify.listen({
+        host: '0.0.0.0',
+        port: 8081,
+    });
+}
+start().catch(err => {
+    console.error(err);
+    process.exit(1);
+});
+//# sourceMappingURL=index.js.map
