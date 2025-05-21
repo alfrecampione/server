@@ -58,6 +58,63 @@ export default async function (fastify) {
     });
     fastify.route({
         method: 'POST',
+        url: '/forgot-password',
+        schema: {
+            tags: ['Password Reset'],
+            description: 'Request a password reset email',
+            body: {
+                type: 'object',
+                properties: {
+                    email: { type: 'string' },
+                },
+                required: ['email'],
+            },
+        },
+        handler: async (request, reply) => {
+            const { email } = request.body;
+            const success = await services.page.sendPasswordResetEmail(email);
+            if (success) {
+                return reply.send({ message: 'Password reset email sent successfully' });
+            }
+            else {
+                return reply.status(404).send({ message: 'User not found' });
+            }
+        },
+    });
+    fastify.route({
+        method: 'POST',
+        url: '/reset-password',
+        schema: {
+            tags: ['Password Reset'],
+            description: 'Reset user password',
+            body: {
+                type: 'object',
+                properties: {
+                    email: { type: 'string' },
+                    token: { type: 'string' },
+                    newPassword: { type: 'string' },
+                },
+                required: ['email', 'token', 'newPassword'],
+            },
+        },
+        handler: async (request, reply) => {
+            const { email, token, newPassword } = request.body;
+            const tokenData = await services.token.verifyToken(token);
+            if (!tokenData) {
+                return reply.status(401).send({ message: 'Invalid token' });
+            }
+            const success = await services.user.updateUser(email, token, newPassword);
+            if (success) {
+                await services.token.deleteToken(token);
+                return reply.send({ message: 'Password reset successfully' });
+            }
+            else {
+                return reply.status(401).send({ message: 'Invalid token or email' });
+            }
+        }
+    });
+    fastify.route({
+        method: 'POST',
         url: '/users',
         schema: {
             tags: ['User'],
@@ -170,6 +227,81 @@ export default async function (fastify) {
         handler: async (request, reply) => {
             const users = await services.user.getAllUsers();
             return reply.send(users);
+        }
+    });
+    fastify.route({
+        method: 'POST',
+        url: '/tokens',
+        schema: {
+            tags: ['Token'],
+            description: 'Create token',
+            body: {
+                type: 'object',
+                properties: {
+                    userId: { type: 'string' },
+                },
+                required: ['userId'],
+            }
+        },
+        handler: async (request, reply) => {
+            const { userId } = request.body;
+            const createdToken = await services.token.createToken(userId);
+            if (createdToken) {
+                return reply.send(createdToken);
+            }
+            else {
+                return reply.status(401).send({ message: 'Token already used' });
+            }
+        }
+    });
+    fastify.route({
+        method: 'GET',
+        url: '/tokens/:userId',
+        schema: {
+            tags: ['Token'],
+            description: 'Get token by userId',
+            params: {
+                type: 'object',
+                properties: {
+                    userId: { type: 'string' },
+                },
+                required: ['userId'],
+            }
+        },
+        handler: async (request, reply) => {
+            const { userId } = request.params;
+            const token = await services.token.verifyToken(userId);
+            if (token) {
+                return reply.send(token);
+            }
+            else {
+                return reply.status(404).send({ message: 'Token not found' });
+            }
+        }
+    });
+    fastify.route({
+        method: 'DELETE',
+        url: '/tokens/:userId',
+        schema: {
+            tags: ['Token'],
+            description: 'Delete token',
+            params: {
+                type: 'object',
+                properties: {
+                    userId: { type: 'string' },
+                },
+                required: ['userId'],
+            }
+        },
+        handler: async (request, reply) => {
+            const { userId } = request.params;
+            const token = await services.token.deleteToken(userId);
+            if (token) {
+                return reply.send(token);
+            }
+            else {
+                return reply.status(404).send({ message: 'Token not found' });
+            }
         }
     });
 }

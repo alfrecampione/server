@@ -26,6 +26,7 @@
     "@fastify/swagger-ui": "^5.2.2",
     "@fastify/type-provider-typebox": "^5.1.0",
     "@prisma/client": "^6.8.2",
+    "@sendgrid/mail": "^8.1.5",
     "@types/node": "^22.15.21",
     "dotenv": "^16.5.0",
     "fastify": "^5.3.3",

@@ -7,6 +7,9 @@ import fastifyJwt from '@fastify/jwt';
 import path from 'path';
 import fastifyStatic from '@fastify/static';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 dotenv.config();
 if (!process.env.JWT_SECRET) {
     throw new Error('Missing JWT_SECRET in environment variables');

@@ -1,17 +1,28 @@
 generator client {
-    provider = "prisma-client-js"
-    output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-    provider = "postgresql" // Change to your database provider (e.g., mysql, sqlite, etc.)
-    url      = env("DATABASE_URL") // Use an environment variable for the database connection string
+  provider = "postgresql" // Change to your database provider (e.g., mysql, sqlite, etc.)
+  url      = env("DATABASE_URL") // Use an environment variable for the database connection string
 }
 
 model User {
-    id        Int      @id @default(autoincrement())
-    email     String   @unique
-    name      String
-    password  String
-    createdAt DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+
+  passwordResetToken PasswordResetToken?
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  token     String   @unique
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
