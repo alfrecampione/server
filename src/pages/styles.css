@@ -1,3 +1,4 @@
+/* General Styles */
 * {
   margin: 0;
   padding: 0;
@@ -13,7 +14,9 @@ body {
   background-color: #f4f4f9;
 }
 
-.login-container {
+/* Login and Register Containers */
+.login-container,
+.register-container {
   width: 300px;
   padding: 20px;
   background-color: #ffffff;
@@ -22,13 +25,15 @@ body {
   text-align: center;
 }
 
-.login-container h2 {
+.login-container h2,
+.register-container h2 {
   margin-bottom: 20px;
   font-size: 24px;
   color: #333333;
 }
 
-.login-container input {
+.login-container input,
+.register-container input {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
@@ -37,7 +42,8 @@ body {
   font-size: 14px;
 }
 
-.login-container button {
+.login-container button,
+.register-container button {
   width: 100%;
   padding: 10px;
   background-color: #007bff;
@@ -48,24 +54,26 @@ body {
   cursor: pointer;
 }
 
-.login-container button:hover {
+.login-container button:hover,
+.register-container button:hover {
   background-color: #0056b3;
 }
 
-.login-container a {
+.login-container a,
+.register-container a {
   display: block;
   margin-top: 10px;
   font-size: 14px;
   color: #007bff;
   text-decoration: none;
-  cursor: pointer;
 }
 
-.login-container a:hover {
+.login-container a:hover,
+.register-container a:hover {
   text-decoration: underline;
 }
 
-/* Modal styles */
+/* Modal Styles for Forgot Password */
 .modal {
   display: none;
   position: fixed;
@@ -137,4 +145,24 @@ body {
 
 .close-btn:hover {
   text-decoration: underline;
+}
+
+/* Signed In Page Styles */
+.message-container {
+  text-align: center;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.message-container h1 {
+  font-size: 24px;
+  color: #333333;
+  margin-bottom: 10px;
+}
+
+.message-container p {
+  font-size: 16px;
+  color: #666666;
 }

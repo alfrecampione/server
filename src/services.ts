@@ -1,15 +1,14 @@
 import { PrismaClient } from '../generated/prisma/index.js';
-import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
-
-const salt = 10;
 
 const services = {
   page: {
     async login(email: string, password: string) {
       const user = await prisma.user.findUnique({ where: { email } });
-      if (user && (await bcrypt.compare(password, user.password))) {
+      const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+      if (user && user.password === hashedPassword) {
         return user;
       }
       return null;
@@ -19,7 +18,7 @@ const services = {
       if (existingUser) {
         return null;
       }
-      const hashedPassword = await bcrypt.hash(password, salt);
+      const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
       return prisma.user.create({
         data: { email, name, password: hashedPassword },
       });
@@ -31,7 +30,7 @@ const services = {
       if (existingUser) {
         return null;
       }
-      const hashedPassword = await bcrypt.hash(password, salt);
+      const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
       return prisma.user.create({
         data: { email, name, password: hashedPassword },
       });
@@ -40,7 +39,7 @@ const services = {
       return prisma.user.findUnique({ where: { email } });
     },
     async updateUser(email: string, name: string, password: string) {
-      const hashedPassword = await bcrypt.hash(password, salt);
+      const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
       return prisma.user.update({
         where: { email },
         data: { name, password: hashedPassword },
