@@ -9,17 +9,18 @@
 <body>
   <div class="login-container">
     <h2>Login</h2>
-    <form>
-      <input type="text" placeholder="Username" required>
-      <input type="password" placeholder="Password" required>
+    <form id="loginForm">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
       <button type="submit">Login</button>
     </form>
-    <a id="forgot-password-link">Forgot Password?</a>
+    <div id="loginMessage"></div>
+    <a id="forgot-password-link" href="#">Forgot Password?</a>
     <a href="register.html">Don't have an account? Register</a>
   </div>
 
   <!-- Modal for Forgot Password -->
-  <div id="forgot-password-modal" class="modal">
+  <div id="forgot-password-modal" class="modal" style="display:none;">
     <div class="popup-container">
       <h2>Forgot Password</h2>
       <p>Enter your email address to receive a password reset link.</p>
@@ -27,21 +28,73 @@
         <input type="email" placeholder="Email Address" required>
         <button type="submit">Send Reset Link</button>
       </form>
-      <a class="close-btn" id="close-modal">Close</a>
+      <div class="modal-message"></div>
+      <a class="close-btn" id="close-modal" href="#">Close</a>
     </div>
   </div>
 
   <script>
-    const forgotPasswordLink = document.getElementById('forgot-password-link');
-    const forgotPasswordModal = document.getElementById('forgot-password-modal');
-    const closeModal = document.getElementById('close-modal');
+    // Login form handler
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const email = form.email.value;
+      const password = form.password.value;
 
-    forgotPasswordLink.addEventListener('click', () => {
-      forgotPasswordModal.classList.add('active');
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const messageDiv = document.getElementById('loginMessage');
+      if (response.ok) {
+        window.location.href = 'ok.html';
+      } else {
+        const data = await response.json();
+        messageDiv.textContent = data.message || 'Login failed.';
+        messageDiv.style.color = 'red';
+      }
     });
 
-    closeModal.addEventListener('click', () => {
-      forgotPasswordModal.classList.remove('active');
+    // Forgot Password modal logic
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+    const forgotPasswordModal = document.getElementById('forgot-password-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const forgotPasswordForm = forgotPasswordModal.querySelector('form');
+    const emailInput = forgotPasswordForm.querySelector('input[type="email"]');
+    const modalMessage = forgotPasswordModal.querySelector('.modal-message');
+
+    forgotPasswordLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotPasswordModal.style.display = 'block';
+    });
+
+    closeModalBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotPasswordModal.style.display = 'none';
+      forgotPasswordForm.reset();
+      modalMessage.textContent = '';
+    });
+
+    forgotPasswordForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      modalMessage.textContent = '';
+      const email = emailInput.value;
+      const response = await fetch('/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      if (response.ok) {
+        modalMessage.textContent = 'Password reset email sent!';
+        modalMessage.style.color = 'green';
+      } else {
+        const data = await response.json();
+        modalMessage.textContent = data.message || 'Failed to send reset email.';
+        modalMessage.style.color = 'red';
+      }
     });
   </script>
 </body>

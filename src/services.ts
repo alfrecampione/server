@@ -1,10 +1,29 @@
 import { PrismaClient } from '../generated/prisma/index.js';
 import crypto from 'crypto';
-import sgMail from '@sendgrid/mail';
+import nodemailer from 'nodemailer';
 
 const prisma = new PrismaClient();
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+const mail = process.env.MAIL
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: mail,
+    pass: process.env.MAIL_PASSWORD, // Use App Password, not your main password
+  },
+});
+
+export async function sendEmail(to: string, subject: string, text: string) {
+  const mailOptions = {
+    from: mail,
+    to,
+    subject,
+    text,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
 
 const services = {
   page: {
@@ -31,30 +50,23 @@ const services = {
       if (!user) {
         return false; // User not found
       }
-
+    
       // Create the respective token
       const token = await services.token.createToken(user.id.toString());
-
+    
       const baseUrl = process.env.APP_BASE_URL || 'http://localhost:8081';
       const resetLink = `${baseUrl}/reset-password?email=${encodeURIComponent(email)}&token=${token}`;
-      const msg = {
-        to: email,
-        from: process.env.SENDGRID_API_KEY!,
-        subject: 'Password Reset Request',
-        text: `You requested a password reset. Click the link below to reset your password:\n\n${resetLink}`,
-        html: `<p>You requested a password reset. Click the link below to reset your password:</p>
-               <a href="${resetLink}">Reset Password</a>`,
-      };
-
+      const subject = 'Password Reset Request';
+      const text = `You requested a password reset. Click the link below to reset your password:\n\n${resetLink}`;
+    
       try {
-        await sgMail.send(msg);
+        await sendEmail(email, subject, text);
         return true;
       } catch (error) {
         console.error('Error sending email:', error);
         return false;
       }
     },
-    
   },
   user: {
     async getUserByEmail(email: string) {
