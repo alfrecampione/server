@@ -1,7 +1,15 @@
 import Sensible from '@fastify/sensible';
 import services from './services.js';
+import jwt from 'jsonwebtoken';
+import path from 'path';
+import { fileURLToPath } from 'url';
 export default async function (fastify) {
     await fastify.register(Sensible);
+    fastify.get('/reset-password', async (request, reply) => {
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        return reply.sendFile('reset-password.html', path.join(__dirname, 'pages'));
+    });
     fastify.route({
         method: 'POST',
         url: '/login',
@@ -21,8 +29,8 @@ export default async function (fastify) {
             const { email, password } = request.body;
             const user = await services.page.login(email, password);
             if (user) {
-                const token = fastify.jwt.sign({ email: user.email, id: user.id });
-                return reply.send({ token });
+                const jwtToken = jwt.sign({ email }, process.env.JWT_SECRET);
+                return reply.send({ jwtToken });
             }
             else {
                 return reply.status(401).send({ message: 'Invalid credentials' });
@@ -90,23 +98,23 @@ export default async function (fastify) {
             body: {
                 type: 'object',
                 properties: {
-                    email: { type: 'string' },
-                    token: { type: 'string' },
-                    newPassword: { type: 'string' },
+                    jwt: { type: 'string' },
+                    password: { type: 'string' },
                 },
-                required: ['email', 'token', 'newPassword'],
+                required: ['jwt', 'password'],
             },
         },
         handler: async (request, reply) => {
-            const { email, token, newPassword } = request.body;
+            const { jwt: jwtToken, password } = request.body;
+            const { email, token } = jwt.verify(jwtToken, process.env.JWT_SECRET);
             const tokenData = await services.token.verifyToken(token);
             if (!tokenData) {
                 return reply.status(401).send({ message: 'Invalid token' });
             }
-            const success = await services.user.updateUser(email, token, newPassword);
+            const success = await services.user.updateUser(email, token, password);
             if (success) {
                 await services.token.deleteToken(token);
-                return reply.send({ message: 'Password reset successfully' });
+                return reply.send({ success: true, message: 'Password reset successfully' });
             }
             else {
                 return reply.status(401).send({ message: 'Invalid token or email' });

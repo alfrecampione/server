@@ -3,13 +3,10 @@ import App from './app.js'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import cors from '@fastify/cors';
-import fastifyJwt from '@fastify/jwt';
 import path from 'path';
 import fastifyStatic from '@fastify/static';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-
-// TODO : Add the email sending service
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,10 +25,6 @@ async function start(): Promise<void> {
   fastify.register(cors, {
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  });
-
-  fastify.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET!,
   });
 
   await fastify.register(swagger, {
@@ -55,7 +48,7 @@ async function start(): Promise<void> {
 
   // Register static file serving
   fastify.register(fastifyStatic, {
-    root: path.join(__dirname, 'pages'),
+    root: path.join(__dirname, '../public/pages'),
     prefix: '/',
   });
 

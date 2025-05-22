@@ -3,7 +3,6 @@ import App from './app.js';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import cors from '@fastify/cors';
-import fastifyJwt from '@fastify/jwt';
 import path from 'path';
 import fastifyStatic from '@fastify/static';
 import dotenv from 'dotenv';
@@ -22,9 +21,6 @@ async function start() {
         origin: '*',
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
     });
-    fastify.register(fastifyJwt, {
-        secret: process.env.JWT_SECRET,
-    });
     await fastify.register(swagger, {
         swagger: {
             info: {
@@ -42,7 +38,7 @@ async function start() {
         transformStaticCSP: (header) => header,
     });
     fastify.register(fastifyStatic, {
-        root: path.join(__dirname, 'pages'),
+        root: path.join(__dirname, '../public/pages'),
         prefix: '/',
     });
     await fastify.register(App);

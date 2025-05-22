@@ -1,6 +1,7 @@
 import { PrismaClient } from '../generated/prisma/index.js';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
@@ -53,9 +54,11 @@ const services = {
     
       // Create the respective token
       const token = await services.token.createToken(user.id.toString());
-    
       const baseUrl = process.env.APP_BASE_URL || 'http://localhost:8081';
-      const resetLink = `${baseUrl}/reset-password?email=${encodeURIComponent(email)}&token=${token}`;
+
+      const jwtToken = jwt.sign({ email, token }, process.env.JWT_SECRET!);
+
+      const resetLink = `${baseUrl}/reset-password?jwt=${jwtToken}`;
       const subject = 'Password Reset Request';
       const text = `You requested a password reset. Click the link below to reset your password:\n\n${resetLink}`;
     
@@ -84,7 +87,7 @@ const services = {
     },
     async updateUser(email: string, name: string, password: string) {
       const existingUser = await services.user.getUserByEmail(email);
-      if (existingUser) {
+      if (!existingUser) {
         return null;
       }
       const hashedPassword = crypto.createHash('sha512').update(password).digest('hex');
