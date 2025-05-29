@@ -5,14 +5,32 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
-const mail = process.env.MAIL
+const mail = process.env.EMAIL_USER;
+const password = process.env.MAIL_PASSWORD;
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
+if (!mail || !password) {
+  throw new Error('EMAIL_USER o MAIL_PASSWORD no están definidos en las variables de entorno');
+}
+
+export const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: mail,
-    pass: process.env.MAIL_PASSWORD, // Use App Password, not your main password
+    pass: password,
   },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ Error verificando conexión con Gmail SMTP:', error);
+  } else {
+    console.log('✅ Conexión SMTP lista. Puedes enviar correos con Gmail.');
+  }
 });
 
 export async function sendEmail(to: string, subject: string, text: string) {
@@ -23,7 +41,13 @@ export async function sendEmail(to: string, subject: string, text: string) {
     text,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Correo enviado:', info.messageId);
+  } catch (error) {
+    console.error('❌ Error al enviar el correo:', error);
+    throw error;
+  }
 }
 
 const services = {
