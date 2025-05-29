@@ -12,7 +12,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         // Adjust the path if your HTML files are in a different directory
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
-        return reply.sendFile('reset-password.html', path.join(__dirname, 'pages'));
+        return reply.sendFile('reset-password.html', path.join(__dirname, '../public/pages'));
     });
 
     // Login

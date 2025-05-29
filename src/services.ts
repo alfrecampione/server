@@ -86,6 +86,7 @@ const services = {
       });
     },
     async updateUser(email: string, name: string, password: string) {
+      console.log(email,name,password)
       const existingUser = await services.user.getUserByEmail(email);
       if (!existingUser) {
         return null;
@@ -109,6 +110,7 @@ const services = {
       if (!tokenRecord) {
         return null;
       }
+      console.log(tokenRecord)
       return tokenRecord;
     },
     async createToken(userId: string) {

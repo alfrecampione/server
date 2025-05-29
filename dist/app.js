@@ -8,7 +8,7 @@ export default async function (fastify) {
     fastify.get('/reset-password', async (request, reply) => {
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
-        return reply.sendFile('reset-password.html', path.join(__dirname, 'pages'));
+        return reply.sendFile('reset-password.html', path.join(__dirname, '../public/pages'));
     });
     fastify.route({
         method: 'POST',
