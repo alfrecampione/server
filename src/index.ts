@@ -56,7 +56,7 @@ async function start(): Promise<void> {
 
   await fastify.listen({
     host: '0.0.0.0',
-    port: 80,
+    port: Number(process.env.PORT) || 80,
   })
 }
 

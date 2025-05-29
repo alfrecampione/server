@@ -1,14 +1,10 @@
 import Sensible from '@fastify/sensible';
 import services from './services.js';
 import jwt from 'jsonwebtoken';
-import path from 'path';
-import { fileURLToPath } from 'url';
 export default async function (fastify) {
     await fastify.register(Sensible);
     fastify.get('/reset-password', async (request, reply) => {
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        return reply.sendFile('reset-password.html', path.join(__dirname, '../public/pages'));
+        return reply.sendFile('reset-password.html');
     });
     fastify.route({
         method: 'POST',

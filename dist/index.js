@@ -44,7 +44,7 @@ async function start() {
     await fastify.register(App);
     await fastify.listen({
         host: '0.0.0.0',
-        port: 8081,
+        port: Number(process.env.PORT) || 80,
     });
 }
 start().catch(err => {

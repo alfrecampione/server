@@ -54,7 +54,19 @@ const services = {
     
       // Create the respective token
       const token = await services.token.createToken(user.id.toString());
-      const baseUrl = process.env.APP_BASE_URL || 'http://localhost:8081';
+      const baseUrlFromEnv = process.env.APP_BASE_URL || 'http://localhost';
+      
+      const port = process.env.PORT || '80';
+
+      let baseUrl: string;
+
+      try {
+        const url = new URL(baseUrlFromEnv);
+        url.port = port;
+        baseUrl = url.toString().replace(/\/$/, '');
+      } catch {
+        baseUrl = `${baseUrlFromEnv}:${port}`;
+      }
 
       const jwtToken = jwt.sign({ email, token }, process.env.JWT_SECRET!);
 
