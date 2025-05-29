@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
-const mail = process.env.EMAIL_USER;
+const mail = process.env.MAIL;
 const password = process.env.MAIL_PASSWORD;
 
 if (!mail || !password) {
