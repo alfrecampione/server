@@ -2,34 +2,34 @@ import { PrismaClient } from '../generated/prisma/index.js';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
+import aws from 'aws-sdk';
 
 const prisma = new PrismaClient();
 
 const mail = process.env.MAIL;
-const password = process.env.MAIL_PASSWORD;
+const awsAccessKeyId = process.env.AWS_SES_ACCESS_KEY_ID;
+const awsSecretAccessKey = process.env.AWS_SES_SECRET_ACCESS_KEY;
+const awsRegion = process.env.AWS_SES_REGION;
 
-if (!mail || !password) {
-  throw new Error('EMAIL_USER o MAIL_PASSWORD no están definidos en las variables de entorno');
+if (!mail || !awsAccessKeyId || !awsSecretAccessKey || !awsRegion) {
+  throw new Error('MAIL, AWS_SES_ACCESS_KEY_ID, AWS_SES_SECRET_ACCESS_KEY o AWS_SES_REGION no están definidos en las variables de entorno');
 }
 
+aws.config.update({
+  accessKeyId: awsAccessKeyId,
+  secretAccessKey: awsSecretAccessKey,
+  region: awsRegion,
+});
+
 export const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: mail,
-    pass: password,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
+  SES: new aws.SES({ apiVersion: '2010-12-01' }),
 });
 
 transporter.verify((error, success) => {
   if (error) {
-    console.error('❌ Error verificando conexión con Gmail SMTP:', error);
+    console.error('❌ Error verificando conexión con AWS SES:', error);
   } else {
-    console.log('✅ Conexión SMTP lista. Puedes enviar correos con Gmail.');
+    console.log('✅ Conexión SES lista. Puedes enviar correos con Amazon SES.');
   }
 });
 
